@@ -685,17 +685,6 @@
             doc.responseTime = null
             doc.memory = null
 
-            var found = false;
-
-            for(var i = 0; i < controllers.length; i++){
-                if(controllers[i].controller == doc.controller){
-                    controllers[i].docs.push(doc);
-                }
-            }
-            if(!found){
-                controllers.push({controller : doc.controller, docs : [doc]})
-            }
-
             // check in array
             if (doc.methods[0] == 'GET') {
                 var idx = 1
