@@ -24,11 +24,38 @@
       <script src="https://cdnjs.cloudflare.com/ajax/libs/sql-formatter/3.1.0/sql-formatter.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
       <style>
+
+
         [v-cloak] {
             display: none;
         }
+
         a {
             color: #3f3398;
+        }
+
+        .accordion {
+            background-color: #eee;
+            color: #444;
+            cursor: pointer;
+            padding: 18px;
+            width: 100%;
+            border: none;
+            text-align: left;
+            outline: none;
+            font-size: 15px;
+            transition: 0.4s;
+        }
+
+        .active, .accordion:hover {
+            background-color: #ccc;
+        }
+
+        .panel {
+            padding: 0 18px;
+            display: none;
+            background-color: white;
+            overflow: hidden;
         }
 
         .my-prism-editor {
@@ -87,6 +114,29 @@
         .dropdown-item:hover{
             background: #edf2f7;
         }
+
+        .table-controllers {
+            width: 100%;
+            background: rgb(145, 187, 255);
+            -webkit-box-shadow: 0px 0px 12px -3px rgba(0,0,0,0.75);
+            -moz-box-shadow: 0px 0px 12px -3px rgba(0,0,0,0.75);
+            box-shadow: 0px 0px 12px -3px rgba(0,0,0,0.75);
+        }
+
+        .trow-controllers {
+            display: block;
+            widows: 100%;
+            margin: 1em;
+        }
+
+        .text-path {
+            color: black;
+        }
+
+        .text-path:hover {
+            color: gray;
+        }
+
       </style>
    </head>
    <body class="bg-gray-100 tracking-wide bg-gray-200">
@@ -130,54 +180,80 @@
             </section>
             <h1 class="font-medium mx-3 mt-3" style="width: max-content;min-width:350px;">Routes List</h1>
             <hr class="border-b border-gray-300">
-            <table class="table-fixed text-sm mt-5 mb-5" style="width: max-content">
+
+            <table class="table-fixed text-sm mt-5 mb-5 table-controllers">
                 <tbody>
-                    @foreach ($docs as $index => $doc)
-                    <tr v-if="!docs[{{$index}}]['isHidden']">
+                    @php
+                        $controllers = array();
+
+                        foreach ($docs as &$valor) {
+                            if( isset($controllers[$valor['controller']]) == false){
+                                $controllers[$valor['controller']] = array($valor);
+                            }
+                            else{
+                                array_push($controllers[$valor['controller']], $valor);
+                            }
+                        }
+                    @endphp
+                    @foreach ($controllers as $key => $controller)
+                    <tr>
                         <td>
-                            <a href="#{{$doc['methods'][0] .'-'. $doc['uri']}}" @click="highlightSidebar({{$index}})" >
-                                <span class="
-                                    font-medium
-                                    inline-flex
-                                    items-center
-                                    justify-center
-                                    px-2
-                                    py-1
-                                    text-xs
-                                    font-bold
-                                    leading-none
-                                    rounded
-                                    text-{{in_array('GET', $doc['methods']) ? 'green': ''}}-100 bg-{{in_array('GET', $doc['methods']) ? 'green': ''}}-500
-                                    text-{{in_array('POST', $doc['methods']) ? 'black': ''}} bg-{{in_array('POST', $doc['methods']) ? 'red': ''}}-500
-                                    text-{{in_array('PUT', $doc['methods']) ? 'black': ''}}-100 bg-{{in_array('PUT', $doc['methods']) ? 'yellow': ''}}-500
-                                    text-{{in_array('PATCH', $doc['methods']) ? 'black': ''}}-100 bg-{{in_array('PATCH', $doc['methods']) ? 'yellow': ''}}-500
-                                    text-{{in_array('DELETE', $doc['methods']) ? 'white': ''}} bg-{{in_array('DELETE', $doc['methods']) ? 'black': ''}}
-                                    ">
-                                    {{$doc['methods'][0]}}
-                                </span>
-                                <span class="text-xs" v-bind:class="docs[{{$index}}]['isActiveSidebar'] ? 'font-bold':''">
-                                    <span class="text-gray-800 pr-1 pl-1" v-if="docs[{{$index}}]['responseOk'] === null">{{$doc['uri']}}</span>
-                                    <span class="font-bold text-green-600 border rounded-full pr-1 pl-1 border-green-600" v-if="docs[{{$index}}]['responseOk'] === true">
-                                        {{$doc['uri']}} -
-                                        <span
-                                            class="inline-flex text-xs"
-                                            v-text="'Status:'+docs[{{$index}}]['responseCode'] + ', Took:' + docs[{{$index}}]['responseTime'] + 'ms'">
-                                        </span>
-                                    </span>
-                                    <span class="font-bold text-red-600 border rounded-full pr-1 pl-1 border-red-500" v-if="docs[{{$index}}]['responseOk'] === false">
-                                        {{$doc['uri']}} -
-                                        <span
-                                            class="inline-flex text-xs"
-                                            v-text="'Status:'+docs[{{$index}}]['responseCode'] + ', Took:' + docs[{{$index}}]['responseTime'] + 'ms'">
-                                        </span>
-                                    </span>
-                                </span>
-                            </a>
+                            <h2 class="accordion"> <b>{{$key}}</b></h2>
+                                <table class="table-fixed text-sm" style="display:none">
+                                    <tbody>
+                                        @foreach ($controller as $index => $doc)
+                                        <tr class="trow-controllers" v-if="!docs[{{$index}}]['isHidden']">
+                                            <td>
+                                                <a href="#{{$doc['methods'][0] .'-'. $doc['uri']}}" @click="highlightSidebar({{$index}})" >
+                                                    <span class="
+                                                        font-medium
+                                                        inline-flex
+                                                        items-center
+                                                        justify-center
+                                                        px-2
+                                                        py-1
+                                                        text-xs
+                                                        font-bold
+                                                        leading-none
+                                                        rounded
+                                                        text-{{in_array('GET', $doc['methods']) ? 'green': ''}}-100 bg-{{in_array('GET', $doc['methods']) ? 'green': ''}}-500
+                                                        text-{{in_array('POST', $doc['methods']) ? 'black': ''}} bg-{{in_array('POST', $doc['methods']) ? 'red': ''}}-500
+                                                        text-{{in_array('PUT', $doc['methods']) ? 'black': ''}}-100 bg-{{in_array('PUT', $doc['methods']) ? 'yellow': ''}}-500
+                                                        text-{{in_array('PATCH', $doc['methods']) ? 'black': ''}}-100 bg-{{in_array('PATCH', $doc['methods']) ? 'yellow': ''}}-500
+                                                        text-{{in_array('DELETE', $doc['methods']) ? 'white': ''}} bg-{{in_array('DELETE', $doc['methods']) ? 'black': ''}}
+                                                        ">
+                                                        {{$doc['methods'][0]}}
+                                                    </span>
+                                                    <span class="text-xs text-path">
+                                                        <span class="pr-1 pl-1" v-if="docs[{{$index}}]['responseOk'] === null">{{$doc['uri']}}</span>
+                                                        <span class="font-bold text-green-600 border rounded-full pr-1 pl-1 border-green-600" v-if="docs[{{$index}}]['responseOk'] === true">
+                                                            {{$doc['uri']}} -
+                                                            <span
+                                                                class="inline-flex text-xs"
+                                                                v-text="'Status:'+docs[{{$index}}]['responseCode'] + ', Took:' + docs[{{$index}}]['responseTime'] + 'ms'">
+                                                            </span>
+                                                        </span>
+                                                        <span class="font-bold text-red-600 border rounded-full pr-1 pl-1 border-red-500" v-if="docs[{{$index}}]['responseOk'] === false">
+                                                            {{$doc['uri']}} -
+                                                            <span
+                                                                class="inline-flex text-xs"
+                                                                v-text="'Status:'+docs[{{$index}}]['responseCode'] + ', Took:' + docs[{{$index}}]['responseTime'] + 'ms'">
+                                                            </span>
+                                                        </span>
+                                                    </span>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
                         </td>
                     </tr>
                     @endforeach
                 </tbody>
             </table>
+
+
         </aside>
          <br><br>
          <div class="ml-6 mr-6 pl-2 w-2/3 p-2" style="width: 100%">
@@ -591,6 +667,8 @@
         var docs = {!! json_encode($docs) !!};
         var app_url = {!! json_encode(config('app.url')) !!};
 
+        var controllers = []
+
         //remove trailing slash if any
         app_url = app_url.replace(/\/$/, '')
         docs.map(function(doc, index) {
@@ -606,6 +684,18 @@
             doc.loading = false
             doc.responseTime = null
             doc.memory = null
+
+            var found = false;
+
+            for(var i = 0; i < controllers.length; i++){
+                if(controllers[i].controller == doc.controller){
+                    controllers[i].docs.push(doc);
+                }
+            }
+            if(!found){
+                controllers.push({controller : doc.controller, docs : [doc]})
+            }
+
             // check in array
             if (doc.methods[0] == 'GET') {
                 var idx = 1
@@ -650,8 +740,14 @@
                 doc.body = JSON.stringify(body, null, 2)
             }
 
+
+
         })
+
+        console.log(controllers)
         Vue.use(VueMarkdown);
+
+
 
         var app = new Vue({
             el: '#app',
@@ -751,9 +847,24 @@
                         doc.loading = false
                         doc.responseTime = endTime - startTime;
                       })
-                },
+                }
             },
           });
+
+            var acc = document.getElementsByClassName("accordion");
+            var i;
+
+            for (i = 0; i < acc.length; i++) {
+            acc[i].addEventListener("click", function() {
+                this.classList.toggle("active");
+                var panel = this.nextElementSibling;
+                if (panel.style.display === "block") {
+                panel.style.display = "none";
+                } else {
+                panel.style.display = "block";
+                }
+            });
+        }
       </script>
    </body>
 </html>
